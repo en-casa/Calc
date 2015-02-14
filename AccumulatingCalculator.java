@@ -1,4 +1,4 @@
-// Nicholas Casale & Lingxiao Zhang
+// Nicholas Casale & Lingxiao Zheng
 // ncasale@ncsu.edu lzheng5@ncsu.edu
 // Accumulating calculator
 // 2/11/15
@@ -88,7 +88,7 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	// Constructor
 	public AccumulatingCalculator() 
 	{
-		System.out.println("\nLingxiao Zheng lzheng@ncsu.edu "
+		System.out.println("\nLingxiao Zheng lzheng5@ncsu.edu "
 				+ "\nNicholas Casale ncasale@ncsu.edu\n");
 		
 	    // Window composition
