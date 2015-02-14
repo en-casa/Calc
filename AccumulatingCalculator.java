@@ -51,7 +51,9 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	{		
 		// debug mode check
 		// if (debug) System.out.println("information or error trace")
-		if ((args.length != 0) && args[0].equalsIgnoreCase("debug")) debug = true;
+		if (args.length != 0)
+		    if (args[0].equalsIgnoreCase("debug"))
+			debug = true;			
 
 		try
 		{
