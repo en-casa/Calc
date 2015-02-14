@@ -5,12 +5,11 @@
 // Takes input arguments:
 //
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import javax.swing.*;
-
 
 public class AccumulatingCalculator implements ActionListener, Accumulator
 {
@@ -26,7 +25,7 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	JLabel error = new JLabel("Error messages print here");
 	// Text areas (center)
 	JTextArea total = new JTextArea("Total sums is 0");
-	JTextArea argument = new JTextArea("Enter numbers to be added/subtracted here."
+	JTextField argument = new JTextField("Enter numbers to be added/subtracted here."
 			+ "\nIf entering decimal points, please specify to the hundredths place."
 			+ "\nDo not enter any spaces after your operators (+ and -)"
 			+ "\n\nPress enter to calculate!");
@@ -98,25 +97,30 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	    Calculator.addActionListener(this);	
 	    Test.addActionListener(this);
 	    Graphing.addActionListener(this);
+	    argument.addActionListener(this);
 	    
 	    window.setSize(800, 600);
 	    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    window.setVisible(true);
-	    
-	    while(!flag)
-	    {
-
-	    	
-	    	
-	    }
 	}
 
 	@Override
 	public String accumulate(String total, String amount)
 			throws IllegalArgumentException 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		try
+		{
+			Double t=new Double(total);
+			Double a=new Double(amount);
+			String s=Double.toString(t+a);
+			int indexDot=s.indexOf('.');
+			s=s.substring(0,indexDot+3);
+			return "$"+s;
+		}
+		catch (NumberFormatException ofe)
+		{
+			throw new IllegalArgumentException("Amount not numeric");
+		}
 	}
 
 	@Override
