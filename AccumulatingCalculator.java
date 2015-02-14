@@ -13,7 +13,8 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import javax.swing.*;
-
+import java.io.*;
+import java.util.Date;
 
 public class AccumulatingCalculator implements ActionListener, Accumulator
 {
@@ -59,6 +60,12 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
     		+ "\nIf entering decimal points,"
     		+ "\nplease specify to the hundredths place."
 			+ "\nDo not enter any spaces after your operators (+ and -)"
+    		+ "\nFor example: +10, -1, -9.45"
+			+ "\n\nCommands:"
+    		+ "\nclear to clear total amount"
+			+ "\nhelp to show the instruction"
+    		+ "\nexit to quit the applicaiton"
+			+ "\nsave to save a Log.txt on disk"
 			+ "\n\nPress enter to calculate!");
     JScrollPane instructScroll = new JScrollPane(instruct);
 	
@@ -149,18 +156,25 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	@Override
 	public String accumulate(String total, String amount)
 			throws IllegalArgumentException 
-	{	
-			if (debug)
-			{	// Trace messages
-				System.out.println("Total: " + total);
-				System.out.println("Amount: " + amount);
-			}
-			
+	{		
 			// Test for accidental newline
 			if (amount.isEmpty()) return total;
 			// test for leading $
 			if (amount.startsWith("$"))
 				amount = amount.substring(1);
+			//commands
+			if (amount.equals("clear"))
+			{
+				clear.doClick();
+				return amount;
+			}
+			if (amount.equals("help"))
+			{
+				instr.doClick();
+				return amount;
+			}
+			if (amount.equals("exit")||amount.equals("save"))
+				return amount;
 			if (!amount.matches("[-0-9+.]+"))
 				throw new IllegalArgumentException("Amount not numeric");
 
@@ -239,26 +253,39 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 		  if (ae.getSource() == argument)
 		  { 	// This action event is called whenever
 			  	// the enter button is pressed in the argument field
-			  	// need to check: hundredths place
-			  	// remove embedded blanks to check mistakes
 			  try
 			  {
-				  String newLine = System.lineSeparator();
 				  if (debug) System.out.println("new line was pressed in the input field");
 				  // read argument field
 				  String op = argument.getText().trim(); // get text, remove leading and trailing blanks
 				  op = op.replace(" ","");
 				  op = op.replace("+", "");
-				  if (debug) System.out.println("Argument is: " + op);			  
-				  // append to log
-				  // catch total
-				  String currentTot = total.getText();			  
-				  total.setText(accumulate(currentTot,op));
-				  String logLine = newLine + currentTot + " + " + op + " = " + total.getText();
-				  log.append(logLine);
-				  // scroll the log to the bottom
+				  String currentTot = total.getText();		
+				  String sum=accumulate(currentTot,op);
+				  switch (sum)
+				  {
+				  case "clear":
+					  log.append("\nclear");
+					  break;
+				  case "help":
+					  log.append("\nhelp");
+					  break;
+				  case "exit":
+					  System.exit(0);
+				  case "save":
+					  log.append("\nsave to local");
+					  String history=log.getText();
+					  System.out.println(history);
+					  BufferedWriter bw=new BufferedWriter(new FileWriter("Log.txt",true));
+					  bw.write(new Date().toString()+"\n");
+					  bw.write(history+"\n\n");
+					  bw.close();
+					  break;
+				  default:
+					  total.setText(sum);
+					  log.append("\n" + currentTot + " + " + op + " = " + total.getText());
+				  }
 				  log.setCaretPosition(log.getDocument().getLength());
-				  // clear text field at end
 				  argument.setText("");
 			  }
 			  catch (Exception e)
