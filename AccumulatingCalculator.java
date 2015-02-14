@@ -3,57 +3,70 @@
 // Accumulating calculator
 // 2/11/15
 // Takes input arguments:
-//
+// debug (if you seek debug mode)
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import javax.swing.*;
+
 
 public class AccumulatingCalculator implements ActionListener, Accumulator
 {
 	// Don't show debug trace messages on the console
-	static boolean debug = false; // set as a cmd line parm
-	private String sum="0";
-	private String args;
-	private static boolean flag=false;
+	private static boolean debug = false; // set as a cmd line parm
 	
 	//Implement GUI instance variables
 	JFrame window = new JFrame("Accumulator Mode");
 	// error field (north)
 	JLabel error = new JLabel("Error messages print here");
 	// Text areas (center)
-	JTextArea total = new JTextArea("Total sums is 0");
-	JTextField argument = new JTextField("Enter numbers to be added/subtracted here."
-			+ "\nIf entering decimal points, please specify to the hundredths place."
-			+ "\nDo not enter any spaces after your operators (+ and -)"
-			+ "\n\nPress enter to calculate!");
+	JTextArea total = new JTextArea("0");
+	JTextField argument = new JTextField("Enter numbers to be added/subtracted here.");
 	JTextArea log = new JTextArea("Log of past computations");
+	
 	// Clear button and Radio buttons (south)
 	JButton clear = new JButton("Clear");
-	JRadioButton Accumulator= new JRadioButton("Accumulator Mode",true);     
-    JRadioButton Calculator  = new JRadioButton("Calculator Mode"); 
-    JRadioButton Test = new JRadioButton("Test Mode");     
-    JRadioButton Graphing  = new JRadioButton("Graphing Mode");
+	JButton instr = new JButton("Instructions");
+	JRadioButton Accumulator= new JRadioButton("Accumulator",true);     
+    JRadioButton Calculator  = new JRadioButton("Calculator"); 
+    JRadioButton Test = new JRadioButton("Test");     
+    JRadioButton Graphing  = new JRadioButton("Graphing");
+    JLabel modeLabel = new JLabel("Mode:");
     ButtonGroup mode = new ButtonGroup();
-    JPanel clearRadio = new JPanel();
+    JPanel clearInstr = new JPanel();
+    JPanel Radio = new JPanel();
+    JPanel south = new JPanel();
+ 
     // scroll for log, and split for total/argument
 	JScrollPane  logscroll = new JScrollPane(log);
     JSplitPane   totalArgumentSplit  = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
             total, argument);
-    JSplitPane totalargSplitWithLog  = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-    		totalArgumentSplit, log);
+    JSplitPane totalargSplitWithLog  = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+    		logscroll, totalArgumentSplit);
     
+    // Instructions window variables
+    JFrame instructions = new JFrame("Instructions");
+    JTextArea instruct = new JTextArea("Instructions: "
+    		+ "\n\nTo hide this screen,"
+    		+ "\nPress the Instructions button again,"
+    		+ "\nOr press the X in this window."
+    		+ "\n\nFor Accumulator Mode: "
+    		+ "\nIf entering decimal points,"
+    		+ "\nplease specify to the hundredths place."
+			+ "\nDo not enter any spaces after your operators (+ and -)"
+			+ "\n\nPress enter to calculate!");
+    JScrollPane instructScroll = new JScrollPane(instruct);
 	
 	public static void main(String[] args) 
-	{		
+	{	
 		// debug mode check
 		// if (debug) System.out.println("information or error trace")
-		if (args.length != 0)
-		    if (args[0].equalsIgnoreCase("debug"))
-			debug = true;			
-
+		if ((args.length != 0) && args[0].equalsIgnoreCase("debug")) debug = true;
 		try
 		{
 			AccumulatingCalculator ac = new AccumulatingCalculator();
@@ -62,7 +75,6 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 		{
 			System.out.println(e);
 		}
-
 	}
 	// Constructor
 	public AccumulatingCalculator() 
@@ -70,92 +82,189 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 		System.out.println("\nLingxiao Zheng lzheng@ncsu.edu "
 				+ "\nNicholas Casale ncasale@ncsu.edu\n");
 		
-	    // Chat Window composition
+	    // Window composition
 	    window.add(error,"North");
 	    window.add(totalargSplitWithLog, "Center");
-	    clearRadio.add(clear); // Add GUI objects in
-	    clearRadio.add(Accumulator);// left-to-right
-	    clearRadio.add(Calculator);  // sequence
-	    clearRadio.add(Test);
-	    clearRadio.add(Graphing);
-	    window.getContentPane().add(clearRadio,"South");
-	    window.setTitle("Business Accumulator"); 
-	    log.setEditable(false);
-	    total.setEditable(false);
-	    totalArgumentSplit.setDividerLocation(200);//split pane separator location 
+	    window.setTitle("Business Accumulator Mode");
+	    window.setSize(500, 600);
+	    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    // Bottom Panel composition
+	    // Button colors
 	    clear.setBackground(Color.green);
 	    clear.setOpaque(true);
+	    instr.setBackground(Color.yellow);
+	    instr.setOpaque(true);
 	    error.setForeground(Color.red);
-	    error.setOpaque(true);
+	    modeLabel.setFont(new Font("default",Font.BOLD,18));
+	    
+	    clearInstr.setLayout(new GridLayout(1,2)); // top row
+	    clearInstr.add(clear);
+	    clearInstr.add(instr);
+	    
+	    Radio.setLayout(new GridLayout(1,5)); // bottom row 
+	    Radio.add(modeLabel);
+	    Radio.add(Accumulator);// Add GUI objects in
+	    Radio.add(Calculator); // left-to-right 
+	    Radio.add(Test);       // sequence
+	    Radio.add(Graphing);
+	    
+	    south.setLayout(new GridLayout(2,1));
+	    south.add(clearInstr);
+	    south.add(Radio);
+	    
+	    window.getContentPane().add(south,"South"); 
+	    log.setEditable(false);
+	    total.setEditable(false);
+	    totalArgumentSplit.setDividerLocation(100);//split pane separator location
+	    totalargSplitWithLog.setDividerLocation(300);
+	    
 	    // Assign action listeners to each button
 	    mode.add(Accumulator);
 	    mode.add(Calculator);   
 	    mode.add(Test);
 	    mode.add(Graphing);
 	    clear.addActionListener(this);
+	    instr.addActionListener(this);
 	    Accumulator.addActionListener(this);
 	    Calculator.addActionListener(this);	
 	    Test.addActionListener(this);
 	    Graphing.addActionListener(this);
 	    argument.addActionListener(this);
 	    
-	    window.setSize(800, 600);
-	    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    // last tweaks, make visible
+	    log.setFont (new Font("default",Font.PLAIN,15));
+	    total.setFont(new Font("default",Font.BOLD,40));
+	    argument.setFont(new Font("default", Font.PLAIN, 20));
 	    window.setVisible(true);
+	    
+	    // Instructions window (don't set visible until button press)
+	    instructions.add(instructScroll);
+	    instructions.setSize(400, 500);
+	    instructions.setLocation(500, 0);
+	    instruct.setEditable(false);
+	    argument.grabFocus();
+	    argument.selectAll();
 	}
 
 	@Override
 	public String accumulate(String total, String amount)
 			throws IllegalArgumentException 
-	{
-		try
-		{
+	{	
+			if (debug)
+			{	// Trace messages
+				System.out.println("Total: " + total);
+				System.out.println("Amount: " + amount);
+			}
+			
+			// Test for accidental newline
+			if (amount.isEmpty()) return total;
+			// test for leading $
+			if (amount.startsWith("$"))
+				amount = amount.substring(1);
+			if (!amount.matches("[-0-9+.]+"))
+				throw new IllegalArgumentException("Amount not numeric");
+
+			// Redundancy methods for embedded/leading/trailing blanks
+			amount = amount.trim();
+			amount = amount.replace(" ", "");
+			
+			// Test for 2 numbers after decimal on input
+			int indexDotAmount = amount.indexOf('.');
+			if(indexDotAmount != -1)
+			{	
+				String afterDot = amount.substring(indexDotAmount+1);
+				if (afterDot.length() != 2) 
+				{
+					error.setText("Amount needs 2 #'s after decimal point. "
+							+ "Total remains the same.");
+					return total;
+				}
+			}
+			// Compute new total
 			Double t=new Double(total);
 			Double a=new Double(amount);
 			String s=Double.toString(t+a);
-			int indexDot=s.indexOf('.');
-			s=s.substring(0,indexDot+3);
-			return "$"+s;
-		}
-		catch (NumberFormatException ofe)
-		{
-			throw new IllegalArgumentException("Amount not numeric");
-		}
+			// Round to 2 decimal places, convert back to string
+		    BigDecimal  totalBD = new BigDecimal(s,MathContext.DECIMAL64);//set precision to 16 digits
+			totalBD = totalBD.setScale(2,BigDecimal.ROUND_UP);//scale (2) is # of digits to right of decimal point.
+			String newTotal = totalBD.toPlainString();// no exponents	
+			if (debug) System.out.println("New Total: " + newTotal);
+			int indexDot = newTotal.indexOf('.');
+			if (newTotal.contains(".00")) newTotal = newTotal.substring(0, indexDot);
+			return newTotal;	
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent ae)
 	{ // button actions
-	      error.setText("  ");// clear 	
+	      error.setText(" ");// clear 	
 		  if (ae.getSource() == clear)
-		     { // Clear the input area, the total area, and the error field
+		  { // Clear the input area, the total area, and the error field
 			   // when this button is pushed
-		     if (debug)
-		    	 System.out.println("The clear button was pushed."); 
-		     
-		     error.setText("  ");
-		     total.setText("");
-		     argument.setText("");
-		     }
+		     if (debug) System.out.println("The clear button was pushed.");
+		     error.setText(" "); // space so that the error bar doesn't disappear
+		     total.setText("0"); // initialize total accumulated to zero
+		     argument.setText(""); // clear input field
+		     argument.grabFocus();
+		  }
+		  if (ae.getSource() == instr)
+		  {
+			  if (debug) System.out.println("Instructions requested.");
+			  if (instructions.isShowing()) instructions.setVisible(false);
+			  else instructions.setVisible(true);
+		  }		
 		  if (ae.getSource() == Accumulator)
-		     { // do whatever when this button is pushed.
-		     System.out.println("Accumulator Mode was pushed."); 
-		     }
+		  { // do whatever when this button is pushed.
+		     if (debug) System.out.println("Accumulator Mode was pushed."); 
+		     window.setTitle("Business Accumulator Mode");
+		  }
 		  if (ae.getSource() == Calculator)
-		     { // do whatever when this button is pushed.
-		     System.out.println("Calculator Mode was pushed."); 
-		     flag=true;
+		  { // do whatever when this button is pushed.
+			 if (debug) System.out.println("Calculator Mode was pushed."); 
 		     error.setText("Function not implemented yet.");
-		     }
+		     window.setTitle("Calculator Mode");
+		  }
 		  if (ae.getSource() == Test)
-		     { // do whatever when this button is pushed.
-		     System.out.println("Test Mode was pushed."); 
+		  { // do whatever when this button is pushed.
+			 if (debug) System.out.println("Test Mode was pushed."); 
 		     error.setText("Function not implemented yet.");
-		     }
+		     window.setTitle("Test Mode");
+		  }
 		  if (ae.getSource() == Graphing)
-		     { // do whatever when this button is pushed.
-		     System.out.println("Graphing Mode was pushed."); 
+		  { // do whatever when this button is pushed.
+			 if (debug) System.out.println("Graphing Mode was pushed."); 
 		     error.setText("Function not implemented yet.");
-		     }
+		     window.setTitle("Graphing Mode");
+		  }
+		  if (ae.getSource() == argument)
+		  { 	// This action event is called whenever
+			  	// the enter button is pressed in the argument field
+			  	// need to check: hundredths place
+			  	// remove embedded blanks to check mistakes
+			  try
+			  {
+				  String newLine = System.lineSeparator();
+				  if (debug) System.out.println("new line was pressed in the input field");
+				  // read argument field
+				  String op = argument.getText().trim(); // get text, remove leading and trailing blanks
+				  op = op.replace(" ","");
+				  op = op.replace("+", "");
+				  if (debug) System.out.println("Argument is: " + op);			  
+				  // append to log
+				  // catch total
+				  String currentTot = total.getText();			  
+				  total.setText(accumulate(currentTot,op));
+				  String logLine = newLine + currentTot + " + " + op + " = " + total.getText();
+				  log.append(logLine);
+				  // scroll the log to the bottom
+				  log.setCaretPosition(log.getDocument().getLength());
+				  // clear text field at end
+				  argument.setText("");
+			  }
+			  catch (Exception e)
+			  {
+				  error.setText(e.getMessage());
+			  }
+		  }  
 	}
 }
