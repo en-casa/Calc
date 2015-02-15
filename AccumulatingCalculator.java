@@ -284,7 +284,7 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 					  bw.close();
 					  break;
 				  default:
-					  total.setText(sum);
+					  total.setText("$" + sum);
 					  log.append("\n" + currentTot + " + " + op + " = " + total.getText());
 				  }
 				  log.setCaretPosition(log.getDocument().getLength());
