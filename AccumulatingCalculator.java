@@ -26,7 +26,7 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	// error field (north)
 	JLabel error = new JLabel("Error messages print here");
 	// Text areas (center)
-	JTextArea total = new JTextArea("0");
+	JTextArea total = new JTextArea("$0");
 	JTextField argument = new JTextField("Enter numbers to be added/subtracted here.");
 	JTextArea log = new JTextArea("Log of past computations");
 	
@@ -57,7 +57,12 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
     		+ "\nPress the Instructions button again,"
     		+ "\nOr press the X in this window."
     		+ "\n\nFor Accumulator Mode: "
-    		+ "\nIf entering decimal points,"
+    		+ "\n\nInput Format:"
+    		+ "\nnum\t$num"
+    		+ "\n+num\t-num"
+    		+ "\n+$num\t-$num"
+    		+ "\n$+num\t$-num"
+    		+ "\n\nPs:If entering decimal points,"
     		+ "\nplease specify to the hundredths place."
 			+ "\nDo not enter any spaces after your operators (+ and -)"
     		+ "\nFor example: +10, -1, -9.45"
@@ -161,9 +166,6 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 	{		
 			// Test for accidental newline
 			if (amount.isEmpty()) return total;
-			// test for leading $
-			if (amount.startsWith("$"))
-				amount = amount.substring(1);
 			//commands
 			if (amount.equals("clear"))
 			{
@@ -219,7 +221,7 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 			   // when this button is pushed
 		     if (debug) System.out.println("The clear button was pushed.");
 		     error.setText(" "); // space so that the error bar doesn't disappear
-		     total.setText("0"); // initialize total accumulated to zero
+		     total.setText("$0"); // initialize total accumulated to zero
 		     argument.setText(""); // clear input field
 		     argument.grabFocus();
 		  }
@@ -262,8 +264,16 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 				  String op = argument.getText().trim(); // get text, remove leading and trailing blanks
 				  op = op.replace(" ","");
 				  op = op.replace("+", "");
-				  String currentTot = total.getText();		
+				  // test for leading $ for op
+				  if (op.contains("$"))
+					  op = op.replaceAll("\\$","");
+				  if (debug) System.out.println(op);
+				  String currentTot = total.getText();	
+				  //test for leading $ for currentTot
+				  if (currentTot.startsWith("$"))
+					  currentTot = currentTot.substring(1);
 				  String sum=accumulate(currentTot,op);
+				  
 				  switch (sum)
 				  {
 				  case "clear":
@@ -285,14 +295,14 @@ public class AccumulatingCalculator implements ActionListener, Accumulator
 					  break;
 				  default:
 					  total.setText("$" + sum);
-					  log.append("\n" + currentTot + " + " + op + " = " + total.getText());
+					  log.append("\n" + "$"+currentTot + " + " + "$"+op + " = " + total.getText());
 				  }
 				  log.setCaretPosition(log.getDocument().getLength());
 				  argument.setText("");
 			  }
 			  catch (Exception e)
 			  {
-				  error.setText(e.getMessage());
+				  error.setText(e.getMessage());	
 			  }
 		  }  
 	}
