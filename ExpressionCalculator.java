@@ -104,8 +104,7 @@ public class ExpressionCalculator implements Accumulator, ActionListener,Calcula
 		symtable.put("pi", Math.PI);
 		symtable.put("x",0.0);
 		
-		ExpressionCalculator ec = new ExpressionCalculator();
-	   
+		ExpressionCalculator ec = new ExpressionCalculator();   
 	} 
 	catch (Exception e)
 	{
@@ -696,9 +695,9 @@ public class ExpressionCalculator implements Accumulator, ActionListener,Calcula
 				getNextTok();//eat num
 				return num;
 			case '+':
-				return parseExpr(true);//eat +
+				return parsePrimary(true);//eat +
 			case '-':
-				return -parseExpr(true);//eat -
+				return -parsePrimary(true);//eat -
 			case '(':
 			{
 				double v=parseExpr(true);//eat '('
