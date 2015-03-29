@@ -13,6 +13,7 @@ import java.io.*;
 import java.math.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
 import javax.swing.*;
 
 public class ExpressionCalculator implements Accumulator, ActionListener,Calculator
@@ -394,27 +395,25 @@ public class ExpressionCalculator implements Accumulator, ActionListener,Calcula
       }
       if ((ae.getSource() == expression) || (ae.getSource() == fromXField))
       {
-     //get input
-	 String expr = expression.getText().trim();
-	 expr = expr.replace("X", "x"); 
-	 String atXString = fromXField.getText().trim();
-	 
+    	  String expr=expression.getText().trim();
+    	  String atXString=fromXField.getText().trim();
 	 try
 	 {
-		 //error message about input goes here
-		 //and will be printed on the label
-		 checkInput(expr,atXString);
-
-		 //Then good to go
 		 String result=calculate(expr,atXString);
 		 total.setText(result);
-		 log.append("\n >>> "+expr+"\n\n      "+result+"\n"); 
+		 if (expr.contains("x"))
+			 log.append("\n >>> "+expr+" for x = " +atXString+"\n\n      "+result+"\n");
+		 else
+			 log.append("\n >>> "+expr+"\n\n      "+result+"\n"); 
 		 log.setCaretPosition(log.getDocument().getLength());
 	 }
 	 catch(IllegalArgumentException e)
 	 {
 		 error.setText(e.getMessage());
-		 log.append("\n >>> "+expr+"\n\n      "+e.getMessage()+"\n"); 
+		 if (!expr.contains("x"))
+			 log.append("\n >>> "+expr+"\n\n      "+e.getMessage()+"\n");
+		 else
+			 log.append("\n >>> "+expr+" for x = " + atXString +"\n\n      "+e.getMessage()+"\n");
 		 log.setCaretPosition(log.getDocument().getLength());
 	 }
      }
@@ -426,31 +425,33 @@ public class ExpressionCalculator implements Accumulator, ActionListener,Calcula
    
    private void checkInput(String expr,String atXString)
    throws IllegalArgumentException
-   {   
-	   // check to see that a value for x was provided
-	   if ((expr.isEmpty() || atXString.isEmpty()))
-		   throw new IllegalArgumentException("InputError: Incomplete expr or x value");
-	 
-	   //check if xstring is valid
-	   if (!atXString.matches("^[0-9.]+$"))
-		   throw new IllegalArgumentException("InputError: X must be a number");
-	
-	   //check if the digit is correct
-	   if (atXString.indexOf(".") != atXString.lastIndexOf("."))
-		   throw new IllegalArgumentException("InputError: Invalid x value");
-	  
+   {    
+	   //if expr contains x, then check atXString
+	   if (expr.contains("x") || expr.contains("X"))
+	   {
+		   expr = expr.replace("X", "x"); 
+		   if (atXString.isEmpty())
+			   throw new IllegalArgumentException("Input Error: x value must be provided");
+
+		   //check if xstring is valid
+		   if (!atXString.matches("^[0-9.]+$"))
+			   throw new IllegalArgumentException("InputError: X must be a number");
+		
+		   //check if the digit is correct
+		   if (atXString.indexOf(".") != atXString.lastIndexOf("."))
+			   throw new IllegalArgumentException("InputError: Invalid x value");
+	   }
+	   //else then we do not need to care about x
+
 	   // mode check for proper mode. 
 	   if (expr.contains("=") && !mode.equals("Test"))
 		   throw new IllegalArgumentException("InputError: Go into Test mode to test equalities");
 	   if (!expr.contains("=") && mode.equals("Test"))
 		   throw new IllegalArgumentException("InputError: Go into Expression mode to eval expressions");
-   }
+  }
    
    //*********************************
    //Parsing goes here
-   //Format of x and expr must be handled before
-   //x must only contain numbers
-   //expr must be a string allowing white space
    
    private static double x;
    private static InputStreamReader isr;
@@ -458,10 +459,16 @@ public class ExpressionCalculator implements Accumulator, ActionListener,Calcula
    public String calculate(String exp, String x)
 		   throws IllegalArgumentException 
    {
+	   //error message about input goes here
+	   //and will be printed on the error label
+	   checkInput(exp,x);
+	   
 	   isr=new InputStreamReader(new ByteArrayInputStream(exp.getBytes()));
-	   ExpressionCalculator.x=Double.parseDouble(x);
+	   //parse x only if x is not empty
+	   if (!x.isEmpty())
+		   ExpressionCalculator.x=Double.parseDouble(x);
 	   double rd=0;boolean rb=false;
-	   curch=' ';//init curchar
+	   curch=' ';
 	   
 	   try {
 		   	while(isr.ready())
@@ -582,6 +589,9 @@ public class ExpressionCalculator implements Accumulator, ActionListener,Calcula
 			{
 			case '=':
 				double rhs=parseExpr(true);//eat =
+				//set the precision of lhs and rhs to 5
+				lhs = new BigDecimal(lhs,MathContext.DECIMAL64).setScale(5,BigDecimal.ROUND_UP).doubleValue();
+				rhs = new BigDecimal(rhs,MathContext.DECIMAL64).setScale(5,BigDecimal.ROUND_UP).doubleValue();
 				if (lhs-rhs==0)
 					eq=true;
 				else
